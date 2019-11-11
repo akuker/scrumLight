@@ -18,8 +18,6 @@
  */
 const unsigned long millisPerSecond = 100;
 
-const unsigned long greenTimeMillis = 20 * millisPerSecond;
-const unsigned long amberTimeMillis = 10 * millisPerSecond;
 
 // MCP23017 device hanging off the i2c bus.
 mcp23017 *buttons;
@@ -34,6 +32,7 @@ unsigned long startTimeMillis = 0;
 // Default to a 2 minute timeout
 unsigned long maxTimeMillis = 2 * 60 * secondsToMillis;
 unsigned long maxDisplayableTime = ((20 * 60) * secondsToMillis) - (10 * secondsToMillis);
+const unsigned long amberTimeMillis = 10 * secondsToMillis;
 
 // Pin connected to the speaker output
 const int speakerPin=6;
@@ -59,13 +58,13 @@ void setup() {
 
 void updateStopLight(unsigned long remainingTimeMillis)
 {
-  if (remainingTimeMillis > greenTimeMillis)
+  if (remainingTimeMillis > amberTimeMillis)
   {
     sevenSeg->setGreenLed(true);
     sevenSeg->setAmberLed(false);
     sevenSeg->setRedLed(false);
   }
-  else if(remainingTimeMillis > amberTimeMillis)
+  else if(remainingTimeMillis > 0)
   {
     sevenSeg->setGreenLed(false);
     sevenSeg->setAmberLed(true);

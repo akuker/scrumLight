@@ -17,8 +17,8 @@
 
 #define MCP23017_BUTTON_ADDR 0x20
 
-#define BUTTON_UP       0x0040u
-#define BUTTON_DOWN     0x0020u
+#define BUTTON_UP       0x0020u
+#define BUTTON_DOWN     0x0040u
 #define BUTTON_RESET    0x8000u
 #define BUTTON_MAX_TIME 0x0080u
 #define BUTTON_MUTE     0x0001u

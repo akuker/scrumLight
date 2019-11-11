@@ -234,17 +234,17 @@ void speakerManagerClass::playTwinkelTwinkle()
 
 void speakerManagerClass::update(bool muted)
 {
-  Serial.print("Active Song Count: ");
-  Serial.print(m_activeSongCount);
-  Serial.print(" Active Song Pos: ");
-  Serial.print(m_activeSongPos);
-  Serial.print(" m_lastNoteChangeMillis ");
-  Serial.print(m_lastNoteChangeMillis);
-  Serial.print(" m_noteDurationMillis ");
-  Serial.print(m_noteDurationMillis);
-  Serial.print(" elapsed time ");
-  Serial.println((millis() - m_lastNoteChangeMillis) );
-  delay(100);
+//  Serial.print("Active Song Count: ");
+//  Serial.print(m_activeSongCount);
+//  Serial.print(" Active Song Pos: ");
+//  Serial.print(m_activeSongPos);
+//  Serial.print(" m_lastNoteChangeMillis ");
+//  Serial.print(m_lastNoteChangeMillis);
+//  Serial.print(" m_noteDurationMillis ");
+//  Serial.print(m_noteDurationMillis);
+//  Serial.print(" elapsed time ");
+//  Serial.println((millis() - m_lastNoteChangeMillis) );
+//  delay(100);
   if(muted || (m_activeSongPos >= m_activeSongCount))
   {
       noTone(m_pinNumber);
