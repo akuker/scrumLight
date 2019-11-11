@@ -6,54 +6,68 @@ mcp23017::mcp23017(uint8_t i2cAddr) {
   // Enable the pull-up resistors on the MCP23017 I2C device
   writeI2c(MCP23017_GP_PU_A, 0xFF);
   writeI2c(MCP23017_GP_PU_B, 0xFF);
+}
+
+/***********************************
+ * Every time update() is called, it will read
+ * all of the button inputs, then store those results
+ * into a circular queue. The results from the last
+ * N samples are "ORed" together so that the button
+ * will only be "active" (voltage low, aka false)
+ * after it has been pressed for N samples.
+ * 
+ * N is based upon the size of m_debounceValues
+ */
+void mcp23017::update() {
+  // Store the current button states so we can look for transitions
+  m_prevValue = m_currentValue;
+  
+  uint16_t readValue = readI2c(MCP23017_GP_IO_A);
+  readValue |= (readI2c(MCP23017_GP_IO_B) << 8);
+
+  m_debounceValues[m_debounceCounter] = readValue;
+  m_debounceCounter = (m_debounceCounter + 1) % ELEMENTCNT(m_debounceValues);
+
+  m_currentValue = 0;
+  // We will debounce the buttons by requiring it to be pressed for N
+  // cycles before we report it as true (voltage low)
+  for (int i=0; i< ELEMENTCNT(m_debounceValues); i++)
+  {
+    m_currentValue |= m_debounceValues[i];
+  }
+
+  Serial.print("Current: ");
+  Serial.print(m_currentValue,HEX);
+  Serial.print(" reset ");
+  Serial.print(active(BUTTON_RESET));
+  Serial.print(" up ");
+  Serial.print(active(BUTTON_UP));
+  Serial.print(" down ");
+  Serial.print(active(BUTTON_DOWN));
+  Serial.print(" mute ");
+  Serial.print(active(BUTTON_MUTE));
+  Serial.print(" max ");
+  Serial.println(active(BUTTON_MAX_TIME));
+
+  
+
 
   
 }
 
-void mcp23017::update() {
-  m_currentValue = 0;
+bool mcp23017::active(int buttonMask)
+{
+  return ((m_currentValue & buttonMask) == 0);
+}
 
+bool mcp23017::pushed(int buttonMask)
+{
+  return ((m_currentValue & buttonMask) == 0) && ((m_prevValue & buttonMask) != 0);  
+}
 
-
-
-
-//    Serial.print("Addr: ");
-//    Serial.print(m_i2cAddr,HEX);
-//    int val = readI2c(MCP23017_IO_DIR_A);
-//    Serial.print(" MCP23017_IO_DIR_A:");
-//    Serial.print(val,HEX);
-//    val = readI2c(MCP23017_IO_DIR_B);
-//    Serial.print(" MCP23017_IO_DIR_B:");
-//    Serial.print(val,HEX);
-//    val = readI2c(MCP23017_GP_IO_A);
-//    Serial.print(" MCP23017_GP_IO_A:");
-//    Serial.print(val,HEX);
-//    val = readI2c(MCP23017_GP_IO_B);
-//    Serial.print(" MCP23017_GP_IO_B:");
-//    Serial.print(val,HEX);
-//    val = readI2c(MCP23017_GP_PU_A);
-//    Serial.print(" MCP23017_GP_PU_A:");
-//    Serial.print(val,HEX);
-//    val = readI2c(MCP23017_GP_PU_B);
-//    Serial.print(" MCP23017_GP_PU_B:");
-//    Serial.println(val,HEX);
-
-
-
-//  Serial.print(readI2c(MCP23017_GP_IO_A),HEX);
-//  Serial.println(readI2c(MCP23017_GP_IO_B),HEX);
-
-  uint16_t readValue = readI2c(MCP23017_GP_IO_A);
-  readValue |= (readI2c(MCP23017_GP_IO_B) << 8);
-
-    Serial.print(" Buttons:");
-    Serial.println(readValue,HEX);
-
-//
-//  m_debounceCounter
-//
-//      val = readI2c(MCP23017_BUTTON_ADDR, MCP23017_GP_IO_A);
-//    val = readI2c(MCP23017_BUTTON_ADDR, MCP23017_GP_IO_B);
+bool mcp23017::released(int buttonMask)
+{
+  return ((m_currentValue & buttonMask) != 0) && ((m_prevValue & buttonMask) == 0);  
 }
 
 

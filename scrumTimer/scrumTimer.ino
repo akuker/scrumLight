@@ -84,6 +84,11 @@ void loop() {
   }
 
 
+  if(buttons->pushed(BUTTON_RESET))
+    Serial.println("Reset Pushed");
+  else if(buttons->released(BUTTON_RESET))
+    Serial.println("Reset Released");
+
   
 
 }

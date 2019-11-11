@@ -101,7 +101,7 @@ int z=0;
 
 void updateShiftRegister(unsigned long leds)
 {
-  int arduinoShift = 0;
+  int arduinoShift = 1;
   if(arduinoShift){
      digitalWrite(latchPin, LOW);
      shiftOut(dataPin, clockPin, LSBFIRST, GET_BYTE(3,leds));
@@ -151,20 +151,20 @@ void loop() {
       value = value ^ ((unsigned long)2 << i);
       Serial.println(value,HEX);
       updateShiftRegister(value);
-      delay(50);
+      delay(200);
     }
   }
 
   for(int i=0; i<10; i++)
   {
     updateShiftRegister(char2_7_seg[i] + char3_7_seg[i] + char4_7_seg[i]);
-    delay(200);
+    delay(500);
 
     
   }
 
-
-  if (!z)
+if(0)
+//if (!z)
 {
   tone(speakerPin,530);
   Serial.println("tone");
