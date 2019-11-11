@@ -36,18 +36,18 @@ void mcp23017::update() {
     m_currentValue |= m_debounceValues[i];
   }
 
-  Serial.print("Current: ");
-  Serial.print(m_currentValue,HEX);
-  Serial.print(" reset ");
-  Serial.print(active(BUTTON_RESET));
-  Serial.print(" up ");
-  Serial.print(active(BUTTON_UP));
-  Serial.print(" down ");
-  Serial.print(active(BUTTON_DOWN));
-  Serial.print(" mute ");
-  Serial.print(active(BUTTON_MUTE));
-  Serial.print(" max ");
-  Serial.println(active(BUTTON_MAX_TIME));
+//  Serial.print("Current: ");
+//  Serial.print(m_currentValue,HEX);
+//  Serial.print(" reset ");
+//  Serial.print(active(BUTTON_RESET));
+//  Serial.print(" up ");
+//  Serial.print(active(BUTTON_UP));
+//  Serial.print(" down ");
+//  Serial.print(active(BUTTON_DOWN));
+//  Serial.print(" mute ");
+//  Serial.print(active(BUTTON_MUTE));
+//  Serial.print(" max ");
+//  Serial.println(active(BUTTON_MAX_TIME));
 
   
 

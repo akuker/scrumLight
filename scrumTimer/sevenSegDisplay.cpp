@@ -156,7 +156,8 @@ const unsigned long sevenSegDisplay::char4_7_seg[] =
 
       if (minutes > 19)
       {
-        Serial.println("Warning: time set to more than 19 minutes!!");
+        Serial.print("Warning: time set to more than 19 minutes!! ");
+        Serial.println(minutes);
         minutes = 19;
       }
       
