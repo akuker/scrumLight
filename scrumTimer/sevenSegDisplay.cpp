@@ -168,33 +168,6 @@ const unsigned long sevenSegDisplay::char4_7_seg[] =
       led_val |= char2_7_seg[minutes % 10];
       led_val |= char3_7_seg[seconds / 10];
       led_val |= char4_7_seg[seconds % 10];
-//      Serial.print(newSeconds);
-//      Serial.print(" seconds decoded as ");
-//      Serial.print(minutes);
-//      Serial.print(":");
-//      Serial.print(seconds);
-//      Serial.print(" = ");
-//      Serial.print(minutes / 10);
-//      Serial.print(" ");
-//      Serial.print(minutes % 10);
-//      Serial.print(":");
-//      Serial.print(seconds / 10);
-//      Serial.print(" ");
-//      Serial.print(seconds % 10);
-//      Serial.print(" ");
-//      Serial.print(led_val,HEX);
-//      Serial.print("  allCharacters=");
-//      Serial.print(allCharacters,HEX);
-//      Serial.print("  ");
-//      Serial.print(char1_7_seg[minutes / 10],HEX);
-//      Serial.print("  ");
-//      Serial.print(char2_7_seg[minutes % 10],HEX);
-//      Serial.print("  ");
-//      Serial.print(char3_7_seg[seconds / 10],HEX);
-//      Serial.print("  ");
-//      Serial.print(char4_7_seg[seconds % 10],HEX);
-//      Serial.println("  ");
-
       updateDisplay(led_val);
     }
 

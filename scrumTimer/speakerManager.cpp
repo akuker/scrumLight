@@ -156,15 +156,6 @@ static const int speakerManagerClass::twinkleTwinkleTempo[] = {
 
 
 static const int speakerManagerClass::marioDeathTempo[] = {0,
-
-//  12, 12, 12, 12,
-//  12, 12, 12, 12,
-//  12, 12, 12, 12,
-//  12, 12, 12, 12,
-//    12, 12, 12, 12,
-//  12, 12, 12, 12,
-//  12, 12, 12, 12,
-//  12, 12, 12, 12,
   17,                                                  // Array for Death sound effect & song
   32, 32, 16, 4, 2, 8, 8, 8, 8, 6, 
   6, 6, 8, 8, 8, 8, 8};
@@ -177,31 +168,6 @@ const int speakerManagerClass::marioGameoverNotes[] = {0,                       
 const int speakerManagerClass::marioGameoverTempo[] = {0,                                               // Array for Game over song
    8*2, 8*2, 8*2, 8*2, 4*2, 4*2, 6*2, 6*2, 6*2, 6*2, 6*2, 
   6*2, 8*2, 8*2, 4*2};
-
-//void speakerManagerClass::playSong(int *notesArray, int *tempoArray, int number, bool flashColumns, uint8_t cancelDiscrete)
-//{
-//  for (int thisNote = 0; thisNote < number; thisNote++) {
-//
-//    // to calculate the note duration, take one second
-//    // divided by the note type.
-//    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
-//    int noteDuration = 1000 / tempoArray[thisNote];
-//
-//    buzz(ARDUINO_PIN_SPEAKER, notesArray[thisNote], noteDuration);
-//
-//    // to distinguish the notes, set a minimum time between them.
-//    // the note's duration + 30% seems to work well:
-//    int pauseBetweenNotes = noteDuration * 1.30;
-//    delay(pauseBetweenNotes);
-//
-//    // stop the tone playing:
-//    buzz(ARDUINO_PIN_SPEAKER, 0, noteDuration);
-//
-//  }
-//  // stop the tone playing:
-//  buzz(ARDUINO_PIN_SPEAKER, 0, MICKEY_QUARTER);
-//    
-//}
 
 void speakerManagerClass::playMario()
 { 
@@ -243,32 +209,6 @@ void speakerManagerClass::playTwinkelTwinkle()
     m_activeSongTempo = twinkleTwinkleTempo;
 }
 
-//void speakerManagerClass::buzz(int targetPin, long frequency, long length) {
-//
-//    delayMicroseconds(length);
-//noTone(targetPin);
-//  long delayValue = 1000000 / frequency / 2; // calculate the delay value between transitions
-//  //// 1 second's worth of microseconds, divided by the frequency, then split in half since
-//  //// there are two phases to each cycle
-//  long numCycles = frequency * length / 1000; // calculate the number of cycles for proper timing
-//  //// multiply frequency, which is really cycles per second, by the number of seconds to
-//  //// get the total number of cycles to produce
-//  for (long i = 0; i < numCycles; i++) { // for the calculated length of time...
-//    digitalWrite(targetPin, HIGH); // write the buzzer pin high to push out the diaphram
-//    delayMicroseconds(delayValue); // wait for the calculated delay value
-//    digitalWrite(targetPin, LOW); // write the buzzer pin low to pull back the diaphram
-//    delayMicroseconds(delayValue); // wait again or the calculated delay value
-//  }
-//}
-
-//
-//void speakerManagerClass::playSound(long frequency, long length)
-//{
-//  buzz(ARDUINO_PIN_SPEAKER,frequency,length);
-//
-//  
-//}
-
 void speakerManagerClass::stop()
 {
   noTone(m_pinNumber);
@@ -280,10 +220,6 @@ void speakerManagerClass::stop()
 void speakerManagerClass::update(bool muted)
 {
 
-  Serial.print("Active song pos:");
-  Serial.print(m_activeSongPos);
-  Serial.print("  Active song count: ");
-  Serial.println(m_activeSongCount);
   if(muted || (m_activeSongPos >= m_activeSongCount))
   {
       stop();
@@ -293,18 +229,6 @@ void speakerManagerClass::update(bool muted)
     // to calculate the note duration, take one second divided by the note type.
     //       e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
     m_noteDurationMillis = (1000 / m_activeSongTempo[m_activeSongPos])*2;
-//
-//    unsigned long currentNoteElapsedMillis = m_lastNoteChangeMillis
-//  Serial.print("Active Song Count: ");
-//  Serial.print(m_activeSongCount);
-//  Serial.print(" Active Song Pos: ");
-//  Serial.print(m_activeSongPos);
-//  Serial.print(" m_lastNoteChangeMillis ");
-//  Serial.print(m_lastNoteChangeMillis);
-//  Serial.print(" m_noteDurationMillis ");
-//  Serial.print(m_noteDurationMillis);
-//  Serial.print(" elapsed time ");
-//  Serial.println((millis() - m_lastNoteChangeMillis) );
 
     // If the elapsed time since last note change > note duration
     if( (m_lastNoteChangeMillis == ULONG_MAX) || ((millis() - m_lastNoteChangeMillis) > m_noteDurationMillis))
