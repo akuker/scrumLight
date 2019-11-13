@@ -6,14 +6,14 @@
 
 
 //Mario main theme intro
-static const int speakerManagerClass::marioIntroNotes[] = {
+static const int speakerManagerClass::marioIntroNotes[] = { 0,
   NOTE_E7, NOTE_E7, 0, NOTE_E7,
   0, NOTE_C7, NOTE_E7, 0,
   NOTE_G7, 0, 0,  0,
   NOTE_G6, 0, 0, 0
 };
 
-static const int speakerManagerClass::marioIntroTempo[] = {
+static const int speakerManagerClass::marioIntroTempo[] = {0,
   12, 12, 12, 12,
   12, 12, 12, 12,
   12, 12, 12, 12,
@@ -154,6 +154,30 @@ static const int speakerManagerClass::twinkleTwinkleTempo[] = {
   TWINKLE_HALF, // sky
 };
 
+
+static const int speakerManagerClass::marioDeathTempo[] = {0,
+
+//  12, 12, 12, 12,
+//  12, 12, 12, 12,
+//  12, 12, 12, 12,
+//  12, 12, 12, 12,
+//    12, 12, 12, 12,
+//  12, 12, 12, 12,
+//  12, 12, 12, 12,
+//  12, 12, 12, 12,
+  17,                                                  // Array for Death sound effect & song
+  32, 32, 16, 4, 2, 8, 8, 8, 8, 6, 
+  6, 6, 8, 8, 8, 8, 8};
+static const int speakerManagerClass::marioDeathNotes[] = {0,                                                  // Array for Death sound effect & song
+  NOTE_C4, NOTE_CS4, NOTE_D4, NOTE_H, NOTE_H, NOTE_B3, NOTE_F4, NOTE_H, NOTE_F4, NOTE_F4, 
+  NOTE_E4, NOTE_D4,  NOTE_C4, NOTE_E3, NOTE_H, NOTE_E3, NOTE_C3 };
+const int speakerManagerClass::marioGameoverNotes[] = {0,                                               // Array for Game over song
+  NOTE_C4, NOTE_H, NOTE_H, NOTE_G3, NOTE_H, NOTE_E3, NOTE_A3, NOTE_B3, NOTE_A3, NOTE_GS3, NOTE_AS3, 
+  NOTE_GS3, NOTE_G3, NOTE_F3, NOTE_G3};
+const int speakerManagerClass::marioGameoverTempo[] = {0,                                               // Array for Game over song
+   8*2, 8*2, 8*2, 8*2, 4*2, 4*2, 6*2, 6*2, 6*2, 6*2, 6*2, 
+  6*2, 8*2, 8*2, 4*2};
+
 //void speakerManagerClass::playSong(int *notesArray, int *tempoArray, int number, bool flashColumns, uint8_t cancelDiscrete)
 //{
 //  for (int thisNote = 0; thisNote < number; thisNote++) {
@@ -183,15 +207,27 @@ void speakerManagerClass::playMario()
 { 
   Serial.println("Start playing Mario!");
   m_activeSongPos = 0;
+  m_lastNoteChangeMillis = ULONG_MAX;
   m_activeSongCount = ELEMENTCNT(marioIntroTempo);
   m_activeSongNotes = marioIntroNotes;
   m_activeSongTempo = marioIntroTempo;
 }
 
+void speakerManagerClass::playGameOver()
+{ 
+  Serial.println("Game Over Man!!");
+  m_activeSongPos = 0;
+  m_lastNoteChangeMillis = ULONG_MAX;
+  m_activeSongCount = ELEMENTCNT(marioGameoverNotes);
+  m_activeSongNotes = marioGameoverNotes;
+  m_activeSongTempo = marioGameoverTempo;
+}
+
 void speakerManagerClass::playMickeyMouse()
 { 
     Serial.println("Start playing Mickey!");
-    m_activeSongPos = 0;
+    m_activeSongPos = 1;
+    m_lastNoteChangeMillis = ULONG_MAX;
     m_activeSongCount = ELEMENTCNT(mickeyMouseTempo);
     m_activeSongNotes = mickeyMouseNotes;
     m_activeSongTempo = mickeyMouseTempo;
@@ -200,7 +236,8 @@ void speakerManagerClass::playMickeyMouse()
 void speakerManagerClass::playTwinkelTwinkle()
 { 
     Serial.println("Start playing Twinkle!");
-    m_activeSongPos = 0;
+    m_lastNoteChangeMillis = ULONG_MAX;
+    m_activeSongPos = -1;
     m_activeSongCount = ELEMENTCNT(twinkleTwinkleTempo);
     m_activeSongNotes = twinkleTwinkleNotes;
     m_activeSongTempo = twinkleTwinkleTempo;
@@ -232,8 +269,32 @@ void speakerManagerClass::playTwinkelTwinkle()
 //  
 //}
 
+void speakerManagerClass::stop()
+{
+  noTone(m_pinNumber);
+  m_currentTone = 0;
+  m_activeSongCount = 0;
+  m_activeSongPos = 0;
+}
+
 void speakerManagerClass::update(bool muted)
 {
+
+  Serial.print("Active song pos:");
+  Serial.print(m_activeSongPos);
+  Serial.print("  Active song count: ");
+  Serial.println(m_activeSongCount);
+  if(muted || (m_activeSongPos >= m_activeSongCount))
+  {
+      stop();
+  }
+  else if (m_activeSongPos < m_activeSongCount)
+  {
+    // to calculate the note duration, take one second divided by the note type.
+    //       e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+    m_noteDurationMillis = (1000 / m_activeSongTempo[m_activeSongPos])*2;
+//
+//    unsigned long currentNoteElapsedMillis = m_lastNoteChangeMillis
 //  Serial.print("Active Song Count: ");
 //  Serial.print(m_activeSongCount);
 //  Serial.print(" Active Song Pos: ");
@@ -244,20 +305,6 @@ void speakerManagerClass::update(bool muted)
 //  Serial.print(m_noteDurationMillis);
 //  Serial.print(" elapsed time ");
 //  Serial.println((millis() - m_lastNoteChangeMillis) );
-//  delay(100);
-  if(muted || (m_activeSongPos >= m_activeSongCount))
-  {
-      noTone(m_pinNumber);
-      m_currentTone = 0;
-      m_activeSongCount = 0;
-  }
-  else if (m_activeSongPos < m_activeSongCount)
-  {
-    // to calculate the note duration, take one second divided by the note type.
-    //       e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
-    m_noteDurationMillis = (1000 / m_activeSongTempo[m_activeSongPos]) * 1000;
-//
-//    unsigned long currentNoteElapsedMillis = m_lastNoteChangeMillis
 
     // If the elapsed time since last note change > note duration
     if( (m_lastNoteChangeMillis == ULONG_MAX) || ((millis() - m_lastNoteChangeMillis) > m_noteDurationMillis))
@@ -266,12 +313,27 @@ void speakerManagerClass::update(bool muted)
       m_activeSongPos++;
       m_lastNoteChangeMillis = millis();
       m_currentTone = m_activeSongNotes[m_activeSongPos];
+      if(m_currentTone == 0)
+      {
+              noTone(m_pinNumber);
+      }
+      else
+      {
       tone(m_pinNumber, m_currentTone);
+      }
       Serial.print("Playing note: ");
       Serial.print(m_activeSongNotes[m_activeSongPos]);
       Serial.print(" for ");
       Serial.print(m_activeSongTempo[m_activeSongPos]);
     }
+    if((millis() - m_lastNoteChangeMillis) > (2*m_noteDurationMillis)/3)
+    {
+      noTone(m_pinNumber);
+    }
+  }
+  else
+  {
+    m_activeSongPos = 0;
   }
 }
 

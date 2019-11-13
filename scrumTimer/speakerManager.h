@@ -9,6 +9,8 @@ class speakerManagerClass {
     void playMario();
     void playTwinkelTwinkle();
     void playMickeyMouse();
+    void playGameOver();
+    void stop();
 
   private:
     static const int marioIntroNotes[];
@@ -17,6 +19,12 @@ class speakerManagerClass {
     static const int mickeyMouseTempo[];
     static const int twinkleTwinkleNotes[];
     static const int twinkleTwinkleTempo[];
+    static const int marioDeathNotes[];
+    static const int marioDeathTempo[];
+    static const int marioGameoverNotes[];
+    static const int marioGameoverTempo[];
+    
+    
     int m_pinNumber = 0;
     int m_currentTone = 0;
 

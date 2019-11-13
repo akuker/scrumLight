@@ -18,6 +18,9 @@
  */
 const unsigned long millisPerSecond = 100;
 
+const int relayPinRed = 9;
+const int relayPinAmber = 10;
+const int relayPinGreen = 11;
 
 // MCP23017 device hanging off the i2c bus.
 mcp23017 *buttons;
@@ -32,7 +35,7 @@ unsigned long startTimeMillis = 0;
 // Default to a 2 minute timeout
 unsigned long maxTimeMillis = 2 * 60 * secondsToMillis;
 unsigned long maxDisplayableTime = ((20 * 60) * secondsToMillis) - (10 * secondsToMillis);
-const unsigned long amberTimeMillis = 10 * secondsToMillis;
+const unsigned long amberTimeMillis = 30 * secondsToMillis;
 
 // Pin connected to the speaker output
 const int speakerPin=6;
@@ -53,28 +56,45 @@ void setup() {
   speaker = new speakerManagerClass(speakerPin);
   sevenSeg = new sevenSegDisplay();
   startTimeMillis = millis();
+
+  pinMode(relayPinRed, OUTPUT);
+  pinMode(relayPinAmber, OUTPUT);
+  pinMode(relayPinGreen, OUTPUT);
 }
 
+bool previousLoopTimedOut = false;
 
 void updateStopLight(unsigned long remainingTimeMillis)
 {
+    sevenSeg->setGreenLed(false);
+    sevenSeg->setAmberLed(false);
+    sevenSeg->setRedLed(false);
+    digitalWrite(relayPinRed, LOW);
+    digitalWrite(relayPinAmber, LOW);
+    digitalWrite(relayPinGreen, LOW);
+
   if (remainingTimeMillis > amberTimeMillis)
   {
     sevenSeg->setGreenLed(true);
-    sevenSeg->setAmberLed(false);
-    sevenSeg->setRedLed(false);
+    digitalWrite(relayPinGreen, HIGH);
+    previousLoopTimedOut = false;
   }
   else if(remainingTimeMillis > 0)
   {
-    sevenSeg->setGreenLed(false);
     sevenSeg->setAmberLed(true);
-    sevenSeg->setRedLed(false);
+    digitalWrite(relayPinAmber, HIGH);
+    previousLoopTimedOut = false;
   }
   else
   {
-    sevenSeg->setGreenLed(false);
-    sevenSeg->setAmberLed(false);
     sevenSeg->setRedLed(true);
+    digitalWrite(relayPinRed, HIGH);
+    // We only want to play the song once after the timeout.
+    if(!previousLoopTimedOut)
+    {
+      speaker->playGameOver();
+      previousLoopTimedOut = true;
+    }
   }
 
   sevenSeg->setAux2Led(muteSound);
@@ -100,6 +120,7 @@ void loop() {
   if(buttons->pushed(BUTTON_RESET))
   {
     startTimeMillis = millis();
+    speaker->stop();
   }
   // Toggle the mute state when the mute button is pressed
   if(buttons->pushed(BUTTON_MUTE))
@@ -134,22 +155,8 @@ void loop() {
   }
   else
   {
-    sevenSeg->displaySeconds(remainingTimeMillis/secondsToMillis);
+    // Math trickery to always round the time up. Otherwise 400ms shows up as "0" on
+    // the display
+    sevenSeg->displaySeconds((remainingTimeMillis + (secondsToMillis/2))/secondsToMillis);
   }
-
-//  if((millis() % 100) == 99)
-////  {
-//Serial.print("Elapsed: ");
-//Serial.print(elapsedTimeMillis);
-//    Serial.print(" Max: ");
-//    Serial.print(maxTimeMillis);
-//    Serial.print(" remaining ");
-//    Serial.print(remainingTimeMillis);
-//    Serial.print(" maxdisplayable: ");
-//    Serial.println(maxDisplayableTime);
-//    
-
-    
-//  }
-
 }
