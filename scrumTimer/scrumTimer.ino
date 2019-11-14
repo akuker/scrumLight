@@ -6,7 +6,8 @@
 // let everyone know they're out of time!
 //////////////////////////////////////
 
-#include<Wire.h>
+#include <Wire.h>
+#include <EEPROM.h>
 #include "mcp23017.h"
 #include "sevenSegDisplay.h"
 #include "utils.h"
@@ -18,9 +19,9 @@
  */
 const unsigned long millisPerSecond = 100;
 
-const int relayPinRed = 9;
-const int relayPinAmber = 10;
-const int relayPinGreen = 11;
+const int relayPinRed = 11;
+const int relayPinAmber = 12;
+const int relayPinGreen = 13;
 
 // MCP23017 device hanging off the i2c bus.
 mcp23017 *buttons;
@@ -37,6 +38,9 @@ unsigned long maxTimeMillis = 2 * 60 * secondsToMillis;
 unsigned long maxDisplayableTime = ((20 * 60) * secondsToMillis) - (10 * secondsToMillis);
 const unsigned long amberTimeMillis = 30 * secondsToMillis;
 
+const unsigned int eepromMutedAddr = 5;
+const unsigned int eepromMaxTimeAddr = 10;
+
 // Pin connected to the speaker output
 const int speakerPin=6;
 
@@ -44,8 +48,10 @@ const int speakerPin=6;
 bool muteSound = false;
 
 void setup() {
+  char nvmValue = 0;
   // Initialize the serial bus
   Serial.begin (115200);
+  while(!Serial){}
 
   buttons = new mcp23017(MCP23017_BUTTON_ADDR);
 
@@ -60,6 +66,27 @@ void setup() {
   pinMode(relayPinRed, OUTPUT);
   pinMode(relayPinAmber, OUTPUT);
   pinMode(relayPinGreen, OUTPUT);
+
+//  for(int i=8; i< 14; i++)
+//  {
+//    pinMode(i, OUTPUT);
+//    digitalWrite(i,HIGH);
+//  }  
+
+  // Read the EEPROM Values
+  EEPROM.get(eepromMutedAddr,nvmValue);
+  // Convert to a boolean, in case we get some random garbage;
+  muteSound = (nvmValue != 0);
+  EEPROM.get(eepromMaxTimeAddr, maxTimeMillis);
+  if(maxTimeMillis > maxDisplayableTime)
+  {
+    maxTimeMillis = 2 * 60 * secondsToMillis;
+  }
+
+  Serial.print("Eeprom Muted Value: ");
+  Serial.print(muteSound);
+  Serial.print(" Eeprom Max Time: ");
+  Serial.println(maxTimeMillis);
 }
 
 bool previousLoopTimedOut = false;
@@ -69,26 +96,29 @@ void updateStopLight(unsigned long remainingTimeMillis)
     sevenSeg->setGreenLed(false);
     sevenSeg->setAmberLed(false);
     sevenSeg->setRedLed(false);
-    digitalWrite(relayPinRed, LOW);
-    digitalWrite(relayPinAmber, LOW);
-    digitalWrite(relayPinGreen, LOW);
 
-  if (remainingTimeMillis > amberTimeMillis)
+  if (remainingTimeMillis > (maxTimeMillis/4))
   {
     sevenSeg->setGreenLed(true);
-    digitalWrite(relayPinGreen, HIGH);
+    digitalWrite(relayPinRed, HIGH);
+    digitalWrite(relayPinAmber, HIGH);
+    digitalWrite(relayPinGreen, LOW );
     previousLoopTimedOut = false;
   }
   else if(remainingTimeMillis > 0)
   {
     sevenSeg->setAmberLed(true);
-    digitalWrite(relayPinAmber, HIGH);
+    digitalWrite(relayPinRed, HIGH);
+    digitalWrite(relayPinAmber, LOW);
+    digitalWrite(relayPinGreen, HIGH);
     previousLoopTimedOut = false;
   }
   else
   {
     sevenSeg->setRedLed(true);
-    digitalWrite(relayPinRed, HIGH);
+    digitalWrite(relayPinRed, LOW);
+    digitalWrite(relayPinAmber, HIGH);
+    digitalWrite(relayPinGreen, HIGH);
     // We only want to play the song once after the timeout.
     if(!previousLoopTimedOut)
     {
@@ -110,6 +140,10 @@ void incrementDecrementMaxTime()
     {
       maxTimeMillis -= (secondsToMillis * 10);
     }
+    // This function uses EEPROM.update() to perform the write, so does 
+    // not rewrite the value if it didn't change.
+    EEPROM.put(eepromMaxTimeAddr, maxTimeMillis);
+
 }
 
 void loop() {
@@ -126,6 +160,9 @@ void loop() {
   if(buttons->pushed(BUTTON_MUTE))
   {
     muteSound = !muteSound;
+    // This function uses EEPROM.update() to perform the write, so does 
+    // not rewrite the value if it didn't change.
+    EEPROM.put(eepromMutedAddr, muteSound);
     if(!muteSound)
     {
       speaker->playMario();

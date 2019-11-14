@@ -245,10 +245,6 @@ void speakerManagerClass::update(bool muted)
       {
       tone(m_pinNumber, m_currentTone);
       }
-      Serial.print("Playing note: ");
-      Serial.print(m_activeSongNotes[m_activeSongPos]);
-      Serial.print(" for ");
-      Serial.print(m_activeSongTempo[m_activeSongPos]);
     }
     if((millis() - m_lastNoteChangeMillis) > (2*m_noteDurationMillis)/3)
     {
