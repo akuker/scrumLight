@@ -10,6 +10,7 @@ class speakerManagerClass {
     void playTwinkelTwinkle();
     void playMickeyMouse();
     void playGameOver();
+    void playCoin();
     void stop();
 
   private:
@@ -23,6 +24,8 @@ class speakerManagerClass {
     static const int marioDeathTempo[];
     static const int marioGameoverNotes[];
     static const int marioGameoverTempo[];
+    static const int marioCoinNotes[];
+    static const int marioCoinTempo[];
     
     
     int m_pinNumber = 0;

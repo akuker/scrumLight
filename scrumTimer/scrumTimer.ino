@@ -43,9 +43,12 @@ const unsigned int eepromMaxTimeAddr = 10;
 
 // Pin connected to the speaker output
 const int speakerPin=6;
+const int blinkyLed = 8;
+const int resetInput = 9;
 
 // Flag to disable the sound output
 bool muteSound = false;
+bool prevResetButtonState = false;
 
 void setup() {
   char nvmValue = 0;
@@ -67,11 +70,11 @@ void setup() {
   pinMode(relayPinAmber, OUTPUT);
   pinMode(relayPinGreen, OUTPUT);
 
-//  for(int i=8; i< 14; i++)
-//  {
-//    pinMode(i, OUTPUT);
-//    digitalWrite(i,HIGH);
-//  }  
+  // initialize the digital pin as an output.
+  pinMode(blinkyLed, OUTPUT);
+  digitalWrite(blinkyLed, LOW);
+  pinMode(resetInput, INPUT);
+  digitalWrite(resetInput, LOW);
 
   // Read the EEPROM Values
   EEPROM.get(eepromMutedAddr,nvmValue);
@@ -87,18 +90,23 @@ void setup() {
   Serial.print(muteSound);
   Serial.print(" Eeprom Max Time: ");
   Serial.println(maxTimeMillis);
+
+  // The following can be used for debugging to set the timeout to a very short time
+  // and to force mute to be disabled.
+  //  muteSound = 0;
+  //  maxTimeMillis = 2 * 60 * 15;
 }
 
 bool previousLoopTimedOut = false;
 
 void updateStopLight(unsigned long remainingTimeMillis)
 {
-    sevenSeg->setGreenLed(false);
-    sevenSeg->setAmberLed(false);
-    sevenSeg->setRedLed(false);
+
 
   if (remainingTimeMillis > (maxTimeMillis/4))
   {
+    sevenSeg->setRedLed(false);
+    sevenSeg->setAmberLed(false);
     sevenSeg->setGreenLed(true);
     digitalWrite(relayPinRed, HIGH);
     digitalWrite(relayPinAmber, HIGH);
@@ -107,7 +115,9 @@ void updateStopLight(unsigned long remainingTimeMillis)
   }
   else if(remainingTimeMillis > 0)
   {
+    sevenSeg->setRedLed(false);
     sevenSeg->setAmberLed(true);
+    sevenSeg->setGreenLed(false);
     digitalWrite(relayPinRed, HIGH);
     digitalWrite(relayPinAmber, LOW);
     digitalWrite(relayPinGreen, HIGH);
@@ -116,6 +126,8 @@ void updateStopLight(unsigned long remainingTimeMillis)
   else
   {
     sevenSeg->setRedLed(true);
+    sevenSeg->setAmberLed(false);
+    sevenSeg->setGreenLed(false); 
     digitalWrite(relayPinRed, LOW);
     digitalWrite(relayPinAmber, HIGH);
     digitalWrite(relayPinGreen, HIGH);
@@ -143,19 +155,45 @@ void incrementDecrementMaxTime()
     // This function uses EEPROM.update() to perform the write, so does 
     // not rewrite the value if it didn't change.
     EEPROM.put(eepromMaxTimeAddr, maxTimeMillis);
+}
 
+void blinkLed()
+{
+  unsigned long curMillis = millis() % 2000;
+  if(curMillis > 1000)
+  {
+    Serial.print(curMillis);
+    Serial.println("on");
+    digitalWrite(blinkyLed, HIGH);   // turn the LED on (HIGH is the voltage level)
+  }
+  else
+  {
+    Serial.print(curMillis);
+    Serial.println("off");
+    digitalWrite(blinkyLed, LOW);    // turn the LED off by making the voltage LOW
+  }
 }
 
 void loop() {
   buttons->update();
   speaker->update(muteSound);
 
+  // Debug
+  //blinkLed();
+
+  // Check the state of the remote reset button. if it transitions from high to low
+  // that's a reset!
+  int resetButtonState = digitalRead(resetInput);
+
   // If the reset button is pressed, reset the start time
-  if(buttons->pushed(BUTTON_RESET))
+  if(buttons->pushed(BUTTON_RESET) || (!resetButtonState && prevResetButtonState))
   {
-    startTimeMillis = millis();
     speaker->stop();
+    speaker->playCoin();
+    startTimeMillis = millis();
   }
+  prevResetButtonState = resetButtonState;
+  
   // Toggle the mute state when the mute button is pressed
   if(buttons->pushed(BUTTON_MUTE))
   {

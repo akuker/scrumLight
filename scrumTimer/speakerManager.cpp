@@ -169,6 +169,10 @@ const int speakerManagerClass::marioGameoverTempo[] = {0,                       
    8*2, 8*2, 8*2, 8*2, 4*2, 4*2, 6*2, 6*2, 6*2, 6*2, 6*2, 
   6*2, 8*2, 8*2, 4*2};
 
+
+const int speakerManagerClass::marioCoinNotes[] = {0, NOTE_B5, NOTE_E6, 0};
+const int speakerManagerClass::marioCoinTempo[] = {0, 8*2, 4, 0};
+
 void speakerManagerClass::playMario()
 { 
   Serial.println("Start playing Mario!");
@@ -207,6 +211,16 @@ void speakerManagerClass::playTwinkelTwinkle()
     m_activeSongCount = ELEMENTCNT(twinkleTwinkleTempo);
     m_activeSongNotes = twinkleTwinkleNotes;
     m_activeSongTempo = twinkleTwinkleTempo;
+}
+
+void speakerManagerClass::playCoin()
+{ 
+  Serial.println("Got a coin!!");
+  m_activeSongPos = 0;
+  m_lastNoteChangeMillis = ULONG_MAX;
+  m_activeSongCount = ELEMENTCNT(marioCoinNotes);
+  m_activeSongNotes = marioCoinNotes;
+  m_activeSongTempo = marioCoinTempo;
 }
 
 void speakerManagerClass::stop()
